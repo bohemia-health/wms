@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Remove AGENTS.md and hide TO-DO.md
+TODO.md
