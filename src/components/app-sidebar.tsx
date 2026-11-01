@@ -34,14 +34,11 @@ import {
   ShoppingCartIcon,
   Megaphone,
   MegaphoneIcon,
+  CreditCardReader,
+  CirclePile,
 } from "lucide-react";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -55,6 +52,12 @@ const data = {
     },
 
     {
+      title: "Inventory",
+      url: "/inventory",
+      icon: <CirclePile />,
+    },
+
+    {
       title: "Orders",
       url: "/sales/orders",
       icon: <ShoppingCartIcon />,
@@ -64,11 +67,6 @@ const data = {
       title: "Campaigns",
       url: "/campaigns",
       icon: <MegaphoneIcon />,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: <ChartBarIcon />,
     },
     {
       title: "Projects",
@@ -149,17 +147,17 @@ const data = {
   documents: [
     {
       name: "Data Library",
-      url: "#",
+      url: "/lib/data",
       icon: <DatabaseIcon />,
     },
     {
       name: "Reports",
-      url: "#",
+      url: "/lib/reports",
       icon: <FileChartColumnIcon />,
     },
     {
-      name: "Word Assistant",
-      url: "#",
+      name: "Policies",
+      url: "/lib/policy",
       icon: <FileIcon />,
     },
   ],
@@ -169,6 +167,11 @@ const data = {
       name: "Analytics",
       url: "/sales/analytics",
       icon: <ChartBarIcon />,
+    },
+    {
+      name: "Transaction Log",
+      url: "/sales/transactions",
+      icon: <CreditCardReader />,
     },
   ],
 };
