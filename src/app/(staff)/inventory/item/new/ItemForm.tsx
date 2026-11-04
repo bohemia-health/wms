@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectTrigger,
@@ -57,6 +66,7 @@ export function ItemForm({
   const [name, setName] = useState("");
   const [confirmedName, setConfirmedName] = useState("");
   const [size, setSize] = useState<string | null>(null);
+  // Lazy, and the route is dynamic, so this is the admin's today.
   const [batchDate, setBatchDate] = useState(today);
   // Null follows the automatic number; a typed one (50AM-0226) replaces it.
   const [typedBatchNumber, setTypedBatchNumber] = useState<string | null>(null);
@@ -99,162 +109,199 @@ export function ItemForm({
     else setName(product.title);
   }
 
+  const [pending, startTransition] = useTransition();
+  function submit(formData: FormData) {
+    startTransition(() => createItem(formData));
+  }
+
   return (
-    <form action={createItem}>
-      <section className="max-w-[10rem]">
-        <Label htmlFor="code" className="text-md">
-          Product code
-        </Label>
-        <Input
-          id="code"
-          name="code"
-          value={code}
-          onChange={(e) => changeCode(e.target.value)}
-          maxLength={20}
-          required
-          className="ring-1 ring-foreground/25 rounded-sm"
-        />
-        {code && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            {product ? "Existing product" : "New product"}
-          </p>
-        )}
-      </section>
+    <form action={submit} className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Product</CardTitle>
+            <CardDescription>
+              Type a code to pick an existing product, or a name to start one.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+            <div className="grid gap-2">
+              <Label htmlFor="code">Code</Label>
+              <Input
+                id="code"
+                name="code"
+                value={code}
+                onChange={(e) => changeCode(e.target.value)}
+                maxLength={20}
+                required
+                className="font-mono uppercase"
+                placeholder="RE"
+              />
+              <p className="h-4 text-xs text-muted-foreground">
+                {code &&
+                  (product ? (
+                    <Badge variant="outline">Existing product</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-muted-foreground">
+                      New product
+                    </Badge>
+                  ))}
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={name}
+                onChange={(e) => changeName(e.target.value)}
+                onBlur={confirmName}
+                required
+                placeholder="Retatrutide"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="size">Size (mg)</Label>
+              <Select name="size" value={size} onValueChange={setSize} required>
+                <SelectTrigger id="size" className="w-full">
+                  <SelectValue placeholder="Pick" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sizes.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="form">Form</Label>
+              <Select name="form" required>
+                <SelectTrigger id="form" className="w-full capitalize">
+                  <SelectValue placeholder="injectable" />
+                </SelectTrigger>
+                <SelectContent>
+                  {forms.map((f) => (
+                    <SelectItem key={f} value={f} className="capitalize">
+                      {f}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
-      <section className="flex gap-2">
-        <div className="flex flex-col gap-2 max-w-md">
-          <Label htmlFor="name" className="text-md">
-            Name
-          </Label>
-          <Input
-            id="name"
-            name="name"
-            value={name}
-            onChange={(e) => changeName(e.target.value)}
-            onBlur={confirmName}
-            required
-            className="ring-1 ring-foreground/25 rounded-sm"
-          />
+        <Card>
+          <CardHeader>
+            <CardTitle>First batch</CardTitle>
+            <CardDescription>
+              Where the stock came from and how much landed. The batch number
+              is built from the code, size and date unless you type one.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+            <div className="grid gap-2">
+              <Label htmlFor="vendor">Vendor</Label>
+              <Select name="vendorId" items={vendorItems} required>
+                <SelectTrigger id="vendor" className="w-full">
+                  <SelectValue placeholder="Choose a vendor" />
+                </SelectTrigger>
+                <SelectContent align="start" alignItemWithTrigger={false}>
+                  {vendorItems.map((v) => (
+                    <SelectItem key={v.value} value={v.value}>
+                      {v.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                step="1"
+                min="0"
+                placeholder="100"
+                required
+                className="tabular-nums"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="batchDate">Batch date</Label>
+              <Input
+                id="batchDate"
+                type="date"
+                value={batchDate}
+                onChange={(e) => setBatchDate(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="batchNumber">Batch number</Label>
+              <Input
+                id="batchNumber"
+                name="batchNumber"
+                value={batchNumber}
+                onChange={(e) => setTypedBatchNumber(e.target.value)}
+                required
+                className="font-mono"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid content-start gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Pricing</CardTitle>
+            <CardDescription>
+              Price is what the store charges. Unit price is what it costs us
+              and never leaves the wms.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="price">Price (USD)</Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="150.00"
+                required
+                className="tabular-nums"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="unitPrice">Unit price (USD)</Label>
+              <Input
+                id="unitPrice"
+                name="unitPrice"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="61.00"
+                className="tabular-nums"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex items-center justify-end gap-3">
+          <Button variant="outline" nativeButton={false} render={<Link href="/inventory" />}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Creating…" : "Create item"}
+          </Button>
         </div>
-
-        <div className=" flex flex-col gap-2 max-w-xs">
-          <Label htmlFor="size" className="text-md">
-            Size
-          </Label>
-          <Select name="size" value={size} onValueChange={setSize} required>
-            <SelectTrigger id="size" className="text-black!">
-              <SelectValue placeholder="10" />
-            </SelectTrigger>
-            <SelectContent>
-              {sizes.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </section>
-
-      <section>
-        <Label htmlFor="form" className="text-md">
-          Form
-        </Label>
-        <Select name="form" required>
-          <SelectTrigger id="form" className="text-black!">
-            <SelectValue placeholder="injectable" />
-          </SelectTrigger>
-
-          <SelectContent>
-            {forms.map((f) => (
-              <SelectItem key={f} value={f}>
-                {f}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </section>
-
-      <section className="max-w-lg!">
-        <Label htmlFor="vendor" className="text-md">
-          Vendor
-        </Label>
-        <Select name="vendorId" items={vendorItems} required>
-          <SelectTrigger id="vendor" className="text-black! gap-4! px-3!">
-            <SelectValue placeholder="Uther Pharmaceuticals" />
-          </SelectTrigger>
-
-          <SelectContent
-            align="start"
-            alignItemWithTrigger={false}
-            className="w-auto!"
-          >
-            {vendorItems.map((v) => (
-              <SelectItem key={v.value} value={v.value}>
-                {v.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </section>
-
-      <section className="max-w-[5.5rem]">
-        <Label htmlFor="price" className="text-md">
-          Price
-        </Label>
-        <Input
-          id="price"
-          name="price"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="150.00"
-          required
-        />
-      </section>
-
-      <section className="max-w-[5.5rem]">
-        <Label htmlFor="quantity" className="text-md">
-          Quantity
-        </Label>
-        <Input
-          id="quantity"
-          name="quantity"
-          type="number"
-          step="1"
-          min="0"
-          placeholder="100"
-          required
-        />
-      </section>
-
-      <section className="max-w-[10rem]">
-        <Label htmlFor="batchDate" className="text-md">
-          Batch date
-        </Label>
-        <Input
-          id="batchDate"
-          type="date"
-          value={batchDate}
-          onChange={(e) => setBatchDate(e.target.value)}
-          required
-        />
-      </section>
-
-      <section className="max-w-[10rem]">
-        <Label htmlFor="batchNumber" className="text-md">
-          Batch number
-        </Label>
-        <Input
-          id="batchNumber"
-          name="batchNumber"
-          value={batchNumber}
-          onChange={(e) => setTypedBatchNumber(e.target.value)}
-          required
-        />
-      </section>
-
-      <Button type="submit">Create item</Button>
+      </div>
     </form>
   );
 }

@@ -22,3 +22,28 @@ export type Vendor = {
   name: string;
   shortName: string | null;
 };
+
+// One batch of stock for an item, as GET /staff/items returns it.
+export type Batch = {
+  id: number;
+  vendorId: number;
+  vendor: string;
+  vendorShort: string | null;
+  batchNumber: string;
+  quantity: number | null;
+  labReports: number;
+};
+
+// One row of the inventory list, as GET /staff/items returns it: the store
+// fields, the cost and listing the store never sees, and the batches.
+export type Item = {
+  id: string;
+  name: string;
+  size: string | null;
+  form: string | null;
+  price: string;
+  unitPrice: string;
+  listed: boolean;
+  slug: string | null;
+  batches: Batch[];
+};

@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+// Shipments are worked from the list, where each row opens in place.
 export default function Page() {
-  return <main>Hello World!</main>;
+  redirect("/shipments");
 }

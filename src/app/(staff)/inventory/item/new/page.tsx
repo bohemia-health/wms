@@ -6,37 +6,30 @@ import type { ItemCode, Vendor } from "../types";
 export const instant = false;
 
 export default async function Page() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/item-forms`, {
-    cache: "no-store",
-  });
-  const forms: string[] = await res.json();
-
   const cookie = (await headers()).get("cookie") ?? "";
-  const vendorRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
-    headers: { cookie },
-    cache: "no-store",
-  });
-  const vendors: Vendor[] = await vendorRes.json();
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const [formRes, vendorRes, productRes] = await Promise.all([
+    fetch(`${api}/item-forms`, { cache: "no-store" }),
+    fetch(`${api}/vendors`, { headers: { cookie }, cache: "no-store" }),
+    fetch(`${api}/item-codes`, { headers: { cookie }, cache: "no-store" }),
+  ]);
+  const forms: string[] = await formRes.json();
+  const vendors: Vendor[] = vendorRes.ok ? await vendorRes.json() : [];
+  const products: ItemCode[] = productRes.ok ? await productRes.json() : [];
   const vendorItems = vendors.map((v) => ({
     value: String(v.publicId),
     label: v.name,
   }));
 
-  const productRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/item-codes`,
-    {
-      headers: { cookie },
-      cache: "no-store",
-    },
-  );
-  const products: ItemCode[] = await productRes.json();
-
   return (
-    <main className="mx-4">
-      <div className="text-center my-4">
-        <h1 className="font-semibold text-2xl">Create a new Item</h1>
-      </div>
-
+    <main className="flex flex-1 flex-col gap-6 px-4 pb-10 lg:px-6">
+      <header className="grid gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight">New item</h1>
+        <p className="text-sm text-muted-foreground">
+          One size of a product, with the first batch that stocks it. A code
+          the catalogue doesn&rsquo;t know starts a new product.
+        </p>
+      </header>
       <ItemForm forms={forms} vendorItems={vendorItems} products={products} />
     </main>
   );
