@@ -14,6 +14,7 @@ export async function createItem(formData: FormData) {
       size: formData.get("size"),
       form: formData.get("form"),
       price: formData.get("price"),
+      unitPrice: formData.get("unitPrice") || undefined,
       vendorId: Number(formData.get("vendorId")),
       quantity: Number(formData.get("quantity")),
       batchNumber: formData.get("batchNumber"),

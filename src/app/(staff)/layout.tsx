@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { getStaff } from "@/lib/session";
-import { SignOutButton } from "@/components/sign-out-button";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
+import { SignOutButton } from "@/components/ui/sign-out-button";
+import { AppSidebar } from "@/components/ui/app-sidebar";
+import { SiteHeader } from "@/components/ui/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 // Every page here depends on who is asking, so none can be prerendered:

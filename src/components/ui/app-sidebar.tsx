@@ -3,10 +3,10 @@
 import * as React from "react";
 
 import { LogoMark } from "@/components/branding/logo-mark";
-import { NavGroup } from "@/components/nav-documents";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import { NavGroup } from "@/components/ui/nav-documents";
+import { NavMain } from "@/components/ui/nav-main";
+import { NavSecondary } from "@/components/ui/nav-secondary";
+import { NavUser } from "@/components/ui/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -36,9 +36,14 @@ import {
   MegaphoneIcon,
   CreditCardReader,
   CirclePile,
+  InboxIcon,
+  ShelvingUnitIcon,
+  PackageOpenIcon,
+  LandmarkIcon,
+  Wallet,
 } from "lucide-react";
 
-const data = {
+const data2 = {
   navMain: [
     {
       title: "Dashboard",
@@ -59,7 +64,7 @@ const data = {
 
     {
       title: "Orders",
-      url: "/sales/orders",
+      url: "/orders",
       icon: <ShoppingCartIcon />,
     },
 
@@ -177,7 +182,91 @@ const data = {
 };
 
 /// put in real, neccessary data into the dashbaord.
-const data2 = {};
+const data = {
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: <LayoutDashboardIcon />,
+    },
+
+    {
+      title: "Campaigns",
+      url: "/campaigns",
+      icon: <MegaphoneIcon />,
+    },
+
+    {
+      title: "Notifications",
+      url: "/notifications",
+      icon: <InboxIcon />,
+    },
+  ],
+
+  warehouse: [
+    {
+      name: "Orders",
+      url: "/orders",
+      icon: <ShoppingCartIcon />,
+    },
+
+    {
+      name: "Shipments",
+      url: "/shipments",
+      icon: <TruckIcon />,
+    },
+
+    {
+      name: "Inventory",
+      url: "/inventory",
+      icon: <ShelvingUnitIcon />,
+    },
+
+    {
+      name: "Fulfillment Center",
+      url: "/fulfillment",
+      icon: <PackageOpenIcon />,
+    },
+  ],
+
+  banking: [
+    {
+      name: "Overview",
+      url: "/finance/balances",
+      icon: <LandmarkIcon />,
+    },
+
+    {
+      name: "Payment Methods",
+      url: "/banking/payment",
+      icon: <Wallet />,
+    },
+
+    {
+      name: "Transaction Log",
+      url: "/banking/transactions",
+      icon: <DatabaseIcon />,
+    },
+  ],
+
+  navSecondary: [
+    {
+      title: "Settings",
+      url: "#",
+      icon: <Settings2Icon />,
+    },
+    {
+      title: "Get Help",
+      url: "#",
+      icon: <CircleHelpIcon />,
+    },
+    {
+      title: "Search",
+      url: "#",
+      icon: <SearchIcon />,
+    },
+  ],
+};
 
 export function AppSidebar({
   user,
@@ -202,8 +291,8 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavGroup label="Documents" items={data.documents} />
-        <NavGroup label="Sales" items={data.sales} />
+        <NavGroup label="Warehouse" items={data.warehouse} />
+        <NavGroup label="Banking" items={data.banking} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
