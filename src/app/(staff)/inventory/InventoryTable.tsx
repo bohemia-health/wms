@@ -44,6 +44,7 @@ import {
   FlaskConicalIcon,
   PackageIcon,
   PlusIcon,
+  PrinterIcon,
   SearchIcon,
   Trash2Icon,
   XIcon,
@@ -56,6 +57,7 @@ import {
   updateBatch,
   updateItem,
 } from "./actions";
+import { ItemImages } from "./ItemImages";
 import type { Batch, Item, Vendor } from "./item/types";
 
 const sizes = Array.from({ length: 10 }, (_, i) => String((i + 1) * 10));
@@ -66,6 +68,44 @@ const currency = new Intl.NumberFormat("en-US", {
 
 const onHand = (item: Item) =>
   item.batches.reduce((sum, b) => sum + (b.quantity ?? 0), 0);
+
+// The stock cell: how many can still be sold, with what is on hand and
+// what unshipped orders have claimed beneath. A campaign item is a pre-sale,
+// so its reserved count is demand, not a claim on the shelf.
+function StockCell({ item }: { item: Item }) {
+  if (item.batches.length === 0 && item.reserved === 0) {
+    return <span className="text-muted-foreground">No batches</span>;
+  }
+  const short = item.channel === "store" && item.available < 0;
+  const none = item.channel === "store" && item.available === 0 && item.reserved > 0;
+  return (
+    <div className="flex items-baseline gap-2">
+      <span
+        className={`font-medium tabular-nums ${
+          short ? "text-destructive" : none ? "text-amber-600 dark:text-amber-500" : ""
+        }`}
+      >
+        {item.channel === "campaign"
+          ? item.onHand.toLocaleString("en-US")
+          : item.available.toLocaleString("en-US")}
+      </span>
+      <span className="text-xs text-muted-foreground tabular-nums">
+        {item.channel === "campaign" ? (
+          <>
+            on hand
+            {item.reserved > 0 && ` · ${item.reserved.toLocaleString("en-US")} ordered`}
+          </>
+        ) : (
+          <>
+            {short ? "available · oversold" : "available"}
+            {item.reserved > 0 && ` · ${item.reserved.toLocaleString("en-US")} reserved`}
+            {item.reserved > 0 && ` of ${item.onHand.toLocaleString("en-US")}`}
+          </>
+        )}
+      </span>
+    </div>
+  );
+}
 
 // Vendors named on an item's batches, short names first, deduplicated.
 function vendorsOf(item: Item) {
@@ -79,10 +119,14 @@ export function InventoryTable({
   items,
   forms,
   vendors,
+  campaign = false,
 }: {
   items: Item[];
   forms: string[];
   vendors: Vendor[];
+  // On a campaign's page the last two columns show the MOQ terms instead
+  // of the unit cost and slug.
+  campaign?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [form, setForm] = useState("all");
@@ -147,9 +191,13 @@ export function InventoryTable({
               <TableHead>Item</TableHead>
               <TableHead>Form</TableHead>
               <TableHead className="text-right">Price</TableHead>
-              <TableHead className="hidden text-right lg:table-cell">Unit</TableHead>
+              <TableHead className={campaign ? "text-right" : "hidden text-right lg:table-cell"}>
+                {campaign ? "MOQ" : "Unit"}
+              </TableHead>
               <TableHead>Stock</TableHead>
-              <TableHead className="hidden xl:table-cell">Slug</TableHead>
+              <TableHead className={campaign ? "text-right" : "hidden xl:table-cell"}>
+                {campaign ? "Price at MOQ" : "Slug"}
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -161,7 +209,9 @@ export function InventoryTable({
                     <PackageIcon className="size-5" />
                     <p className="text-sm">
                       {items.length === 0
-                        ? "No items yet. Add one to list it on the store."
+                        ? campaign
+                          ? "No items in this campaign yet."
+                          : "No items yet. Add one to list it on the store."
                         : "Nothing matches that search."}
                     </p>
                   </div>
@@ -171,8 +221,6 @@ export function InventoryTable({
 
             {visible.map((item) => {
               const open = item.id === openId;
-              const stock = onHand(item);
-              const names = vendorsOf(item);
               return (
                 <Fragment key={item.id}>
                   <TableRow
@@ -213,30 +261,27 @@ export function InventoryTable({
                     <TableCell className="text-right font-medium tabular-nums">
                       {currency.format(Number(item.price))}
                     </TableCell>
-                    <TableCell className="hidden text-right text-muted-foreground tabular-nums lg:table-cell">
-                      {Number(item.unitPrice) > 0
-                        ? currency.format(Number(item.unitPrice))
-                        : "—"}
+                    <TableCell
+                      className={`text-right text-muted-foreground tabular-nums ${campaign ? "" : "hidden lg:table-cell"}`}
+                    >
+                      {campaign
+                        ? (item.moq ?? "—")
+                        : Number(item.unitPrice) > 0
+                          ? currency.format(Number(item.unitPrice))
+                          : "—"}
                     </TableCell>
                     <TableCell>
-                      {item.batches.length === 0 ? (
-                        <span className="text-muted-foreground">No batches</span>
-                      ) : (
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="font-medium tabular-nums">
-                            {stock.toLocaleString("en-US")}
-                          </span>
-                          <span className="text-muted-foreground">
-                            in {item.batches.length}{" "}
-                            {item.batches.length === 1 ? "batch" : "batches"} ·{" "}
-                            {names.join(", ")}
-                          </span>
-                        </div>
-                      )}
+                      <StockCell item={item} />
                     </TableCell>
-                    <TableCell className="hidden font-mono text-xs text-muted-foreground xl:table-cell">
-                      {item.slug ?? "—"}
-                    </TableCell>
+                    {campaign ? (
+                      <TableCell className="text-right text-muted-foreground tabular-nums">
+                        {item.moqPrice ? currency.format(Number(item.moqPrice)) : "—"}
+                      </TableCell>
+                    ) : (
+                      <TableCell className="hidden font-mono text-xs text-muted-foreground xl:table-cell">
+                        {item.slug ?? "—"}
+                      </TableCell>
+                    )}
                   </TableRow>
                   {open && (
                     <TableRow className="hover:bg-transparent">
@@ -288,6 +333,11 @@ function ItemEditor({
   const [form, setForm] = useState<string | null>(item.form);
   const [listed, setListed] = useState(item.listed);
   const reports = item.batches.reduce((n, b) => n + b.labReports, 0);
+  const inCampaign = item.channel === "campaign";
+  // A size outside the usual steps (a 5 mg campaign item) still has to
+  // show and save, so it joins the list.
+  const sizeOptions =
+    item.size && !sizes.includes(item.size) ? [item.size, ...sizes] : sizes;
 
   function submit(formData: FormData) {
     setError(null);
@@ -346,7 +396,7 @@ function ItemEditor({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {sizes.map((s) => (
+                {sizeOptions.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
                   </SelectItem>
@@ -400,6 +450,35 @@ function ItemEditor({
               className="bg-background tabular-nums"
             />
           </div>
+
+          {inCampaign && (
+            <>
+              <div className="grid gap-2">
+                <Label htmlFor={`moq-${item.id}`}>MOQ (kits)</Label>
+                <Input
+                  id={`moq-${item.id}`}
+                  name="moq"
+                  type="number"
+                  step="1"
+                  min="1"
+                  defaultValue={item.moq ?? ""}
+                  className="bg-background tabular-nums"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor={`moq-price-${item.id}`}>Price at MOQ (USD)</Label>
+                <Input
+                  id={`moq-price-${item.id}`}
+                  name="moqPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={item.moqPrice ?? ""}
+                  className="bg-background tabular-nums"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -407,7 +486,7 @@ function ItemEditor({
             <Label className="flex items-center gap-2.5">
               <Switch checked={listed} onCheckedChange={setListed} />
               <span>
-                Listed on store
+                {inCampaign ? "Shown in campaign" : "Listed on store"}
                 {!listed && (
                   <span className="pl-1.5 text-xs font-normal text-muted-foreground">
                     hidden from customers, kept here
@@ -478,6 +557,7 @@ function ItemEditor({
       </form>
 
       <BatchList item={item} vendors={vendors} />
+      <ItemImages item={item} />
     </div>
   );
 }
@@ -491,6 +571,10 @@ function BatchList({ item, vendors }: { item: Item; vendors: Vendor[] }) {
           Batches
           <span className="pl-2 font-normal text-muted-foreground tabular-nums">
             {onHand(item).toLocaleString("en-US")} on hand
+            {item.reserved > 0 &&
+              ` · ${item.reserved.toLocaleString("en-US")} reserved · ${item.available.toLocaleString("en-US")} available`}
+            {" · "}
+            {vendorsOf(item).join(", ") || "no vendor"}
           </span>
         </h3>
         {!adding && (
@@ -614,6 +698,11 @@ function BatchRow({
           className="font-mono"
           autoFocus={!batch}
         />
+        {batch?.barcode && (
+          <p className="font-mono text-[11px] tracking-wide text-muted-foreground">
+            {batch.barcode}
+          </p>
+        )}
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor={`${key}-qty`} className="text-xs text-muted-foreground">
@@ -636,6 +725,26 @@ function BatchRow({
             <FlaskConicalIcon />
             {batch.labReports} {batch.labReports === 1 ? "report" : "reports"}
           </Badge>
+        )}
+        {batch?.barcode && (
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            aria-label={`Print label ${batch.barcode}`}
+            title={`Print label ${batch.barcode}`}
+            className="text-muted-foreground"
+            nativeButton={false}
+            render={
+              <a
+                href={`/inventory/batches/${batch.id}/label`}
+                target="_blank"
+                rel="noopener"
+              />
+            }
+          >
+            <PrinterIcon />
+          </Button>
         )}
         <Button type="submit" size="sm" variant={batch ? "outline" : "default"} disabled={pending}>
           {pending ? "Saving…" : batch ? "Save" : "Add"}

@@ -17,6 +17,12 @@ async function staffFetch(path: string, init: RequestInit) {
   });
 }
 
+// The same items show on Inventory and on their campaign's page.
+function refresh() {
+  revalidatePath("/inventory");
+  revalidatePath("/campaigns", "layout");
+}
+
 async function explain(res: Response, fallback: string) {
   const body = (await res.json().catch(() => null)) as {
     error?: string;
@@ -37,17 +43,22 @@ export async function updateItem(
       price: formData.get("price"),
       unitPrice: formData.get("unitPrice"),
       listed: formData.get("listed") === "true",
+      // Only the campaign editor has these fields. Blank clears the value.
+      ...(formData.has("moq") && {
+        moq: formData.get("moq") ? Number(formData.get("moq")) : null,
+        moqPrice: String(formData.get("moqPrice") ?? "") || null,
+      }),
     }),
   });
   if (!res.ok) return { ok: false, error: await explain(res, "Update failed") };
-  revalidatePath("/inventory");
+  refresh();
   return { ok: true };
 }
 
 export async function deleteItem(id: string): Promise<ActionResult> {
   const res = await staffFetch(`/items/${id}`, { method: "DELETE" });
   if (!res.ok) return { ok: false, error: await explain(res, "Delete failed") };
-  revalidatePath("/inventory");
+  refresh();
   return { ok: true };
 }
 
@@ -60,7 +71,7 @@ export async function addBatch(
     body: JSON.stringify(batchBody(formData)),
   });
   if (!res.ok) return { ok: false, error: await explain(res, "Add failed") };
-  revalidatePath("/inventory");
+  refresh();
   return { ok: true };
 }
 
@@ -73,14 +84,14 @@ export async function updateBatch(
     body: JSON.stringify(batchBody(formData)),
   });
   if (!res.ok) return { ok: false, error: await explain(res, "Save failed") };
-  revalidatePath("/inventory");
+  refresh();
   return { ok: true };
 }
 
 export async function deleteBatch(id: number): Promise<ActionResult> {
   const res = await staffFetch(`/batches/${id}`, { method: "DELETE" });
   if (!res.ok) return { ok: false, error: await explain(res, "Remove failed") };
-  revalidatePath("/inventory");
+  refresh();
   return { ok: true };
 }
 
@@ -90,4 +101,28 @@ function batchBody(formData: FormData) {
     batchNumber: String(formData.get("batchNumber") ?? ""),
     quantity: Number(formData.get("quantity")),
   };
+}
+
+// The file travels browser -> this action -> API -> bucket. No JSON
+// content-type here: fetch writes the multipart header itself, boundary
+// included, when the body is a FormData.
+export async function addImage(
+  itemId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  const cookie = (await headers()).get("cookie") ?? "";
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/items/${itemId}/images`,
+    { method: "POST", headers: { cookie }, body: formData, cache: "no-store" },
+  );
+  if (!res.ok) return { ok: false, error: await explain(res, "Upload failed") };
+  refresh();
+  return { ok: true };
+}
+
+export async function deleteImage(id: string): Promise<ActionResult> {
+  const res = await staffFetch(`/item-images/${id}`, { method: "DELETE" });
+  if (!res.ok) return { ok: false, error: await explain(res, "Remove failed") };
+  refresh();
+  return { ok: true };
 }

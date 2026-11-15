@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Fragment, useEffect, useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -352,9 +353,18 @@ function OrderPanel({ row, couriers, onDone }: { row: OrderRow; couriers: Courie
                   key={l.id}
                   className="flex items-center justify-between gap-3 border-b px-3 py-2 last:border-0"
                 >
-                  <span>
-                    <span className="pr-2 font-medium tabular-nums">{l.quantity} ×</span>
-                    {l.name}
+                  <span className="flex items-center gap-2">
+                    <span>
+                      <span className="pr-2 font-medium tabular-nums">{l.quantity} ×</span>
+                      {l.name}
+                    </span>
+                    {/* Reserved stock across all open orders exceeds the shelf:
+                        this order may not be fillable until stock arrives. */}
+                    {l.available !== null && l.available < 0 && (
+                      <Badge variant="outline" className="text-amber-600 dark:text-amber-500">
+                        {Math.abs(l.available)} short
+                      </Badge>
+                    )}
                   </span>
                   <span className="tabular-nums">{money(Number(l.price) * l.quantity)}</span>
                 </div>

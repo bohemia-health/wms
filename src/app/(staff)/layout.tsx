@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { getStaff } from "@/lib/session";
 import { SignOutButton } from "@/components/ui/sign-out-button";
-import { AppSidebar } from "@/components/ui/app-sidebar";
-import { SiteHeader } from "@/components/ui/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { StaffShell } from "./StaffShell";
 
 // Every page here depends on who is asking, so none can be prerendered:
 // Next 16 would otherwise try to build them ahead of time and complain that
@@ -37,19 +35,8 @@ export default async function StaffLayout({
     );
   }
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" user={staff.user} />
-      <SidebarInset>
-        <SiteHeader />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <StaffShell user={{ name: staff.user.name, email: staff.user.email }}>
+      {children}
+    </StaffShell>
   );
 }

@@ -27,6 +27,13 @@ const TONES: Record<string, string> = {
   DELIVERED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   REJECTED: "bg-destructive/10 text-destructive",
   RETURNED: "bg-destructive/10 text-destructive",
+  // campaigns (CANCELLED is shared with orders above)
+  DRAFT: "bg-muted text-foreground",
+  UPCOMING: "bg-blue-500/10 text-blue-700 dark:text-blue-300",
+  ACTIVE: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  INACTIVE: "bg-muted text-muted-foreground",
+  FUNDED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  UNFUNDED: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
   // verification
   "PENDING VERIFICATION": "bg-muted text-muted-foreground",
   VERIFIED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
@@ -37,9 +44,13 @@ const TONES: Record<string, string> = {
 
 export function StatusBadge({
   status,
+  label,
   className,
 }: {
   status: string | null | undefined;
+  // Shown instead of the status itself when the two differ, e.g. a
+  // campaign that is "active" in the database reads as Open.
+  label?: string;
   className?: string;
 }) {
   if (!status) return <span className="text-muted-foreground">—</span>;
@@ -48,7 +59,7 @@ export function StatusBadge({
       variant="secondary"
       className={cn("capitalize", TONES[status] ?? "", className)}
     >
-      {humanize(status)}
+      {label ?? humanize(status)}
     </Badge>
   );
 }
