@@ -50,7 +50,16 @@ export type OrderDetail = Omit<
   "shipTo" | "city" | "state" | "country" | "items" | "units" | "shipmentCount"
 > & {
   addresses: OrderAddress[];
-  lines: { id: string; quantity: number; name: string; price: string }[];
+  lines: {
+    id: string;
+    itemId: string | null;
+    quantity: number;
+    name: string;
+    price: string;
+    // Free units of the item right now; null for lines from before
+    // order lines pointed at an item.
+    available: number | null;
+  }[];
   shipments: {
     id: string;
     courier: string | null;

@@ -25,10 +25,10 @@ export function InventoryScreen({
   vendors: Vendor[];
 }) {
   const hidden = items.filter((i) => !i.listed).length;
-  const onHand = items.reduce(
-    (sum, i) => sum + i.batches.reduce((s, b) => s + (b.quantity ?? 0), 0),
-    0,
-  );
+  const onHand = items.reduce((sum, i) => sum + i.onHand, 0);
+  const reserved = items.reduce((sum, i) => sum + i.reserved, 0);
+  const available = onHand - reserved;
+  const short = items.filter((i) => i.channel === "store" && i.available <= 0 && i.reserved > 0).length;
   const batchCount = items.reduce((sum, i) => sum + i.batches.length, 0);
   const products = new Set(items.map((i) => i.slug ?? i.name)).size;
   const prices = items.map((i) => Number(i.price)).filter(Number.isFinite);
@@ -77,12 +77,21 @@ export function InventoryScreen({
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>On hand</CardDescription>
+            <CardDescription>Available to sell</CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums">
-              {onHand.toLocaleString("en-US")}
+              {available.toLocaleString("en-US")}
+              <span className="pl-1.5 text-base font-normal text-muted-foreground">
+                of {onHand.toLocaleString("en-US")} on hand
+              </span>
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              in {batchCount} {batchCount === 1 ? "batch" : "batches"}
+              {reserved.toLocaleString("en-US")} reserved for open orders · {batchCount}{" "}
+              {batchCount === 1 ? "batch" : "batches"}
+              {short > 0 && (
+                <span className="text-amber-600 dark:text-amber-500">
+                  {" "}· {short} {short === 1 ? "item" : "items"} sold out
+                </span>
+              )}
             </p>
           </CardHeader>
         </Card>
