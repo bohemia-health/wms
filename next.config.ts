@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   // 1 MB body limit is smaller than a product photo. The API caps at 4 MB.
   experimental: {
     serverActions: { bodySizeLimit: "5mb" },
+    agentUpgrade: "security",
   },
   // Item images are served from the public Backblaze bucket.
   images: {
