@@ -1,45 +1,51 @@
 import Image from "next/image";
-import { QueueOrder } from "./types";
 import { ScanBarcode } from "lucide-react";
 import { FulfillmentBar } from "./FulfillmentBar";
 
-export function FulfillmentScreen({ queue }: { queue: QueueOrder[] }) {
-  const next = queue.find((o) => o.fillable === "yes") ?? null;
-  const line = next?.lines[0] ?? null;
-
+export function FulfillmentScreen({ queue }: { queue: string }) {
   return (
-    <main className="flex min-h-dvh w-full flex-col">
-      <FulfillmentBar />
-      <section className="bg-blue-100 px-5 py-6 text-slate-950 sm:px-10 sm:py-10">
-        <div className="mx-auto flex max-w-6xl items-center justify-center gap-6 sm:gap-16 lg:gap-[clamp(6rem,12vw,14rem)]">
-          <Image
-            src="/sample/mito-vial.png"
-            alt="Sample vial"
-            width={110}
-            height={242}
-            sizes="(min-width: 640px) 76px, 48px"
-            className="h-auto w-12 shrink-0 sm:w-19"
-            priority
-          />
-          <div className="min-w-0 max-w-2xl space-y-4 sm:space-y-6">
-            <h1 className="text-xl leading-tight font-medium text-pretty sm:text-3xl">
+    <main className="flex min-h-dvh w-full flex-col bg-white text-zinc-950">
+      <FulfillmentBar queue={queue} />
+
+      <section aria-labelledby="item-name" className="bg-[#dfe3fc]">
+        <div className="mx-auto grid max-w-[100rem] grid-cols-[clamp(5rem,24vw,24rem)_minmax(0,1fr)] items-stretch gap-x-[clamp(1rem,4vw,4rem)] px-[clamp(1rem,3.2vw,3.25rem)] py-[clamp(1.5rem,2.65vw,2.75rem)]">
+          <div className="flex min-h-28 items-center justify-center self-center overflow-hidden rounded-xl bg-[#e1e1e3] sm:aspect-[8/5] sm:rounded-2xl">
+            <Image
+              src="/sample/mito-vial.png"
+              alt="Sample vial"
+              width={110}
+              height={242}
+              sizes="(min-width: 1600px) 88px, (min-width: 640px) 5.5vw, 40px"
+              className="h-auto w-10 sm:w-[23%]"
+              priority
+            />
+          </div>
+          <div className="flex flex-col justify-between gap-6">
+            <h1 id="item-name" className="text-[clamp(1.125rem,2.15vw,2.15rem)] leading-[1.24] font-medium tracking-[-0.02em] text-pretty">
               Uther Pharmaceuticals BPC-157 10mg Pink Vial Cap Brown Vial Crimp{" "}
               <span className="whitespace-nowrap">BP10-0723</span>
             </h1>
-            <p className="text-lg font-semibold sm:text-2xl">QTY: 1</p>
+            <p className="text-[clamp(1.75rem,3.75vw,3.75rem)] leading-none font-medium tracking-tight tabular-nums">
+              QTY: 1
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="flex flex-1 flex-col items-center justify-center gap-8 px-5 py-10 text-center sm:gap-12">
-        <h2 className="text-3xl font-medium tracking-tight sm:text-5xl">
+      <section
+        aria-labelledby="scan-heading"
+        className="flex flex-1 flex-col items-center px-4 pt-[clamp(2.5rem,6vh,4.5rem)] pb-10 text-center"
+      >
+        <h2 id="scan-heading" className="text-[clamp(2rem,4.8vw,4.75rem)] leading-[1.05] font-medium tracking-[-0.035em]">
           Scan Item Barcode
         </h2>
-        <ScanBarcode
-          aria-hidden="true"
-          strokeWidth={1.25}
-          className="size-16 text-muted-foreground sm:size-20"
-        />
+        <div className="flex flex-1 items-center justify-center py-10">
+          <ScanBarcode
+            aria-hidden="true"
+            strokeWidth={1.15}
+            className="size-[clamp(4.5rem,8vw,8rem)] text-zinc-700"
+          />
+        </div>
       </section>
     </main>
   );

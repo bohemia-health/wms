@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { StatusBadge } from "@/components/status-badge";
 import {
   Table,
@@ -15,7 +16,10 @@ import { STATUS_LABELS, type Campaign } from "./types";
 export const instant = false;
 
 export default async function Page() {
+  // Asclepius asks for a session on this route, so the cookie goes along.
+  const cookie = (await headers()).get("cookie") ?? "";
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaigns`, {
+    headers: { cookie },
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`campaigns answered ${res.status}`);

@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const api = process.env.NEXT_PUBLIC_API_URL;
   const staff = { headers: { cookie }, cache: "no-store" } as const;
   const [res, itemRes, formRes, vendorRes, codeRes] = await Promise.all([
-    fetch(`${api}/campaigns/${id}`, { cache: "no-store" }),
+    fetch(`${api}/campaigns/${id}`, staff),
     // The staff view of the items: batches, vendors and hidden ones included.
     fetch(`${api}/staff/items?campaign=${encodeURIComponent(id)}`, staff),
     fetch(`${api}/item-forms`, { cache: "no-store" }),
