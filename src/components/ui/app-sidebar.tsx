@@ -43,144 +43,6 @@ import {
   Wallet,
 } from "lucide-react";
 
-const data2 = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: <LayoutDashboardIcon />,
-    },
-    {
-      title: "Shipments",
-      url: "/shipments",
-      icon: <TruckIcon />,
-    },
-
-    {
-      title: "Inventory",
-      url: "/inventory",
-      icon: <CirclePile />,
-    },
-
-    {
-      title: "Orders",
-      url: "/orders",
-      icon: <ShoppingCartIcon />,
-    },
-
-    {
-      title: "Campaigns",
-      url: "/campaigns",
-      icon: <MegaphoneIcon />,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: <FolderIcon />,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: <UsersIcon />,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: <CameraIcon />,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: <FileTextIcon />,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: <FileTextIcon />,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: <Settings2Icon />,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: <CircleHelpIcon />,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: <SearchIcon />,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "/lib/data",
-      icon: <DatabaseIcon />,
-    },
-    {
-      name: "Reports",
-      url: "/lib/reports",
-      icon: <FileChartColumnIcon />,
-    },
-    {
-      name: "Policies",
-      url: "/lib/policy",
-      icon: <FileIcon />,
-    },
-  ],
-
-  sales: [
-    {
-      name: "Analytics",
-      url: "/sales/analytics",
-      icon: <ChartBarIcon />,
-    },
-    {
-      name: "Transaction Log",
-      url: "/sales/transactions",
-      icon: <CreditCardReader />,
-    },
-  ],
-};
-
 /// put in real, neccessary data into the dashbaord.
 const data = {
   navMain: [
@@ -226,6 +88,24 @@ const data = {
       name: "Fulfillment Center",
       url: "/fulfillment",
       icon: <PackageOpenIcon />,
+    },
+  ],
+
+  quality: [
+    {
+      name: "Lab Reports",
+      url: "/repository",
+      icon: <FileChartColumnIcon />,
+    },
+    {
+      name: "Batches",
+      url: "/qc/batch",
+      icon: <FileTextIcon />,
+    },
+    {
+      name: "Labs",
+      url: "/qc/labs",
+      icon: <DatabaseIcon />,
     },
   ],
 
@@ -293,6 +173,7 @@ export function AppSidebar({
         <NavMain items={data.navMain} />
         <NavGroup label="Warehouse" items={data.warehouse} />
         <NavGroup label="Banking" items={data.banking} />
+        <NavGroup label="Quality" items={data.quality} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
